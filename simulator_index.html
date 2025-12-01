@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Investimentos | Marcus DeLeon TM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #2d3748;
+            --accent: #667eea;
+            --gold: #d4af37;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #48bb78;
+            --danger: #f56565;
+            --excel: #217346;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 10px;
+            position: relative;
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .marca-dagua {
+            position: fixed;
+            top: 70%;
+            left: 60%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 30px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.02);
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+            text-shadow: 0px 1px 3px rgba(255, 255, 255, 0.05);
+            user-select: none;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.3;
+        }
+
+        .marca-dagua::before {
+            content: "MARCUS DELEON";
+        }
+
+        .marca-dagua::after {
+            content: "TM";
+            font-size: 12px;
+            vertical-align: super;
+            margin-left: 3px;
+            font-weight: 500;
+            color: var(--gold);
+        }
+
+        #app {
+            max-width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 100;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-name {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            display: inline-block;
+        }
+
+        .brand-name::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 20%;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px;
+        }
+
+        .brand-tagline {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+
+        .app-header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 101;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--gold));
+        }
+
+        .app-header h1 {
+            color: var(--dark);
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .tagline {
+            color: var(--secondary);
+            font-size: 0.85em;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .selic-info {
+            background: linear-gradient(135deg, var(--light) 0%, #edf2f7 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .selic-info::before {
+            content: "📈";
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: var(--accent);
+            opacity: 0.3;
+            font-size: 1.1em;
+        }
+
+        .selic-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .selic-status {
+            font-size: 0.75em;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .selic-up {
+            color: var(--success);
+        }
+
+        .selic-down {
+            color: var(--danger);
+        }
+
+        .selic-stable {
+            color: var(--gold);
+        }
+
+        .datetime {
+            text-align: center;
+            color: var(--secondary);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .clock {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .calendar {
+            font-size: 0.75em;
+            color: #718096;
+        }
+
+        .app-main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 101;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 101;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .panel h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .panel h2 i {
+            margin-right: 8px;
+            color: var(--accent);
+            font-size: 0.9em;
+        }
+
+        .form-row {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9em;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+            background: white;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 50px;
+            touch-action: manipulation;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(26, 42, 108, 0.3);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--secondary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .resultado-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .resultado-item {
+            background: linear-gradient(135deg, var(--light) 0%, #edf2f7 100%);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .resultado-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+        }
+
+        .resultado-item.highlight {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+            border: 2px solid #48bb78;
+        }
+
+        .resultado-item.highlight::before {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+        }
+
+        .resultado-item .label {
+            display: block;
+            font-size: 0.8em;
+            color: #718096;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .resultado-item .value {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .selic-history {
+            margin-top: 6px;
+            font-size: 0.7em;
+            color: #718096;
+            font-style: italic;
+        }
+
+        small {
+            color: #718096;
+            font-size: 0.75em;
+        }
+
+        .brand-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8em;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-highlight {
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85em;
+        }
+
+        .premium-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--gold), #f7ef8a);
+            color: var(--dark);
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.65em;
+            font-weight: 700;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn.export {
+            background: linear-gradient(135deg, var(--success) 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+            flex: 0 1 auto;
+            padding: 12px 15px;
+            font-size: 14px;
+            min-height: 44px;
+        }
+
+        .btn.export.secondary {
+            background: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn.export.excel {
+            background: linear-gradient(135deg, var(--excel) 0%, #21a366 100%);
+            box-shadow: 0 4px 12px rgba(33, 115, 70, 0.3);
+        }
+
+        .chart-container {
+            margin-top: 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .chart-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+
+        .chart-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .chart-line:last-child {
+            border-bottom: none;
+        }
+
+        .chart-period {
+            font-size: 0.8em;
+            color: var(--secondary);
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .chart-value {
+            font-size: 0.8em;
+            color: var(--dark);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .chart-value-liquido {
+            font-size: 0.7em;
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .chart-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .chart-total .chart-period {
+            color: var(--primary);
+            font-size: 0.85em;
+        }
+
+        .chart-total .chart-value {
+            color: var(--success);
+            font-size: 0.9em;
+        }
+
+        .valor-input-container {
+            position: relative;
+        }
+
+        .valor-input-container::before {
+            content: "R$";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            font-weight: 600;
+            z-index: 2;
+            font-size: 16px;
+        }
+
+        #valorAplicacao {
+            padding-left: 40px;
+            font-size: 16px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            pointer-events: none;
+            font-size: 10px;
+        }
+
+        input[type="number"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .search-input {
+            padding-right: 40px;
+        }
+        
+        .search-spinner {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .search-spinner.active {
+            opacity: 1;
+        }
+        
+        .banks-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+        }
+        
+        .bank-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .bank-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bank-item:hover {
+            background-color: #f8fafc;
+        }
+        
+        .bank-item.selected {
+            background-color: #e6f0ff;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .bank-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .bank-info {
+            flex: 1;
+        }
+        
+        .bank-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9em;
+            margin-bottom: 2px;
+        }
+        
+        .bank-type {
+            font-size: 0.75em;
+            color: #718096;
+        }
+
+        .info-selic-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: #edf2f7;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .info-selic-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .info-selic-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-selic-icon {
+            margin-right: 8px;
+            font-size: 1em;
+            min-width: 20px;
+        }
+        
+        .info-selic-text {
+            flex: 1;
+            font-size: 0.85em;
+            color: var(--dark);
+            line-height: 1.4;
+        }
+        
+        .info-selic-text strong {
+            color: var(--dark);
+        }
+
+        .ir-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 8px;
+            border-left: 4px solid #f56565;
+            font-size: 0.8em;
+        }
+
+        .ir-info.isento {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+        }
+
+        .ir-aliquota {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #f56565;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .ir-aliquota.isento {
+            background: #48bb78;
+        }
+
+        @media (max-width: 375px) {
+            body {
+                font-size: 12px;
+                padding: 5px;
+            }
+            
+            .panel {
+                padding: 15px;
+            }
+            
+            .resultado-item .value {
+                font-size: 0.9em;
+            }
+            
+            .btn {
+                padding: 12px 15px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+            
+            .banks-list {
+                max-height: 150px;
+            }
+            
+            .resultado-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-actions {
+                flex-direction: column;
+            }
+            
+            .btn.export {
+                flex: 1;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
+            }
+            
+            .app-main {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 25px;
+            }
+            
+            .resultado-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+            
+            .resultado-item {
+                padding: 18px;
+            }
+            
+            .brand-name {
+                font-size: 1.8em;
+            }
+            
+            .marca-dagua {
+                font-size: 50px;
+            }
+            
+            .panel {
+                padding: 25px;
+            }
+            
+            .header-info {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .selic-info, .datetime {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="marca-dagua"></div>
+
+    <div id="app">
+        <div class="brand-header">
+            <div class="brand-name">MARCUS DELEON<span style="font-size: 0.5em; vertical-align: super; margin-left: 3px; color: var(--gold);">TM</span></div>
+            <div class="brand-tagline">Tecnologia Financeira de Ponta</div>
+        </div>
+
+        <header class="app-header">
+            <h1>📈 Simulador de Investimentos</h1>
+            <p class="tagline">Poupança · CDB · RDB · LCI · LCA · Tesouro · Renda Fixa</p>
+            
+            <div class="header-info">
+                <div class="selic-info">
+                    <div class="selic-value" id="selicValue">Carregando SELIC...</div>
+                    <div class="selic-status" id="selicStatus">Conectando ao Banco Central...</div>
+                    <div class="selic-history" id="selicHistory"></div>
+                </div>
+                
+                <div class="datetime">
+                    <div class="clock" id="currentTime">--:--:--</div>
+                    <div class="calendar" id="currentDate">--/--/----</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <section class="panel panel-form">
+                <h2>⚙️ Configuração</h2>
+
+                <form id="simuladorForm">
+                    <div class="form-row">
+                        <label for="tipoAplicacao">💼 Tipo de Aplicação</label>
+                        <div class="select-wrapper">
+                            <select id="tipoAplicacao" required>
+                                <option value="">Selecione...</option>
+                                <option value="poupanca">Poupança</option>
+                                <option value="cdb">CDB</option>
+                                <option value="rdb">RDB</option>
+                                <option value="lci">LCI</option>
+                                <option value="lca">LCA</option>
+                                <option value="tesouro">Tesouro SELIC</option>
+                                <option value="overnight">Overnight</option>
+                                <option value="prefixado">Pré-fixado</option>
+                                <option value="posfixado">Pós-fixado</option>
+                                <option value="prazo-fixo">Prazo Fixo Bancário</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="instituicaoBancaria">🏦 Instituição Financeira</label>
+                        <div class="search-container">
+                            <input type="text" id="instituicaoBancaria" class="search-input" placeholder="Buscar banco...">
+                            <div class="search-spinner" id="searchSpinner"></div>
+                        </div>
+                        <div class="banks-list hidden" id="banksList"></div>
+                        <small style="display: block; margin-top: 8px; color: #718096;">
+                            💡 Digite para buscar entre os bancos reconhecidos pelo Banco Central
+                        </small>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="dataAplicacao">📅 Data da Aplicação</label>
+                        <input type="date" id="dataAplicacao" required>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="prazoMeses">⏰ Prazo (meses)</label>
+                        <input type="number" id="prazoMeses" min="1" max="360" placeholder="Ex: 12, 24, 72..." required>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="valorAplicacao">💰 Valor a Aplicar (R$)</label>
+                        <div class="valor-input-container">
+                            <input type="text" id="valorAplicacao" placeholder="0,00" required inputmode="decimal">
+                        </div>
+                        <small style="display: block; margin-top: 8px; color: #718096;">
+                            💡 Digite apenas números
+                        </small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary" id="btnCalcular">
+                            🧮 Calcular
+                        </button>
+                        <button type="button" id="btnLimpar" class="btn ghost">
+                            🧹 Limpar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel panel-resultado">
+                <h2>📊 Resultado</h2>
+
+                <div id="resultadoVazio">
+                    <p style="text-align: center; color: #718096; font-size: 0.9em; padding: 25px;">
+                        👆<br>
+                        Preencha os dados e clique em <strong>Calcular</strong> para ver a simulação.
+                    </p>
+                </div>
+
+                <div id="resultadoDetalhado" class="hidden">
+                    <div class="resultado-grid">
+                        <div class="resultado-item">
+                            <span class="label">Valor Aplicado</span>
+                            <span class="value" id="resValorAplicado">R$ 0,00</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Valor Bruto Final</span>
+                            <span class="value" id="resValorBruto">R$ 0,00</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Rendimento Total</span>
+                            <span class="value" id="resRendimento">R$ 0,00</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Prazo</span>
+                            <span class="value" id="resPrazo">0 meses</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Taxa Usada</span>
+                            <span class="value" id="resTaxaUsada">0,00% a.a.</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Tipo de Aplicação</span>
+                            <span class="value" id="resTipoAplicacao">-</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Instituição</span>
+                            <span class="value" id="resInstituicao">-</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Imposto de Renda</span>
+                            <span class="value" id="resIR">R$ 0,00</span>
+                        </div>
+                        <div class="resultado-item">
+                            <span class="label">Alíquota IR</span>
+                            <span class="value" id="resAliquotaIR">0%</span>
+                        </div>
+                        <div class="resultado-item highlight">
+                            <span class="label">Valor Líquido</span>
+                            <span class="value" id="resValorLiquido">R$ 0,00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Evolução do Investimento</div>
+                        <div class="chart-content" id="chartContent"></div>
+                    </div>
+                    
+                    <div class="info-selic-container">
+                        <div class="info-selic-item">
+                            <div class="info-selic-icon">📈</div>
+                            <div class="info-selic-text">
+                                <strong>Baseado na SELIC:</strong> <span id="resSelicBase">-</span>
+                            </div>
+                        </div>
+                        <div class="info-selic-item">
+                            <div class="info-selic-icon">📊</div>
+                            <div class="info-selic-text">
+                                <strong>Tipo de taxa:</strong> <span id="resDescricaoTaxa">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ir-info" id="irInfoContainer">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <strong>💼 Situação do IR:</strong>
+                                <span class="ir-aliquota" id="irAliquotaBadge">0%</span>
+                            </div>
+                            <div class="info-selic-text" id="irDescription">
+                                Calculando...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="export-actions">
+                        <button type="button" id="btnExportPDF" class="btn export">
+                            📄 PDF
+                        </button>
+                        <button type="button" id="btnExportExcel" class="btn export excel">
+                            📊 Excel
+                        </button>
+                        <button type="button" id="btnExportImage" class="btn export secondary">
+                            🖼️ Imagem
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div class="brand-footer">
+            <p>Uma ferramenta <span class="brand-highlight">MARCUS DELEON™</span> - Tecnologia Financeira Avançada <span class="premium-badge">PREMIUM</span></p>
+            <p style="margin-top: 8px; font-size: 0.7em; opacity: 0.7;">© 2024 Todos os direitos reservados</p>
+        </div>
+    </div>
+
+    <script>
+        const TABELA_IR = {
+            0: 22.5,
+            180: 20,
+            360: 17.5,
+            720: 15
+        };
+
+        const ISENCAO_IR = {
+            'lci': true,
+            'lca': true,
+            'poupanca': true
+        };
+
+        function calcularIR(tipoInvestimento, diasInvestimento, rendimentoBruto) {
+            if (ISENCAO_IR[tipoInvestimento]) {
+                return {
+                    aliquota: 0,
+                    valorIR: 0,
+                    isento: true
+                };
+            }
+            
+            let aliquota = TABELA_IR[720];
+            
+            if (diasInvestimento <= 180) {
+                aliquota = TABELA_IR[0];
+            } else if (diasInvestimento <= 360) {
+                aliquota = TABELA_IR[180];
+            } else if (diasInvestimento <= 720) {
+                aliquota = TABELA_IR[360];
+            }
+            
+            const valorIR = rendimentoBruto * (aliquota / 100);
+            
+            return {
+                aliquota: aliquota,
+                valorIR: valorIR,
+                isento: false,
+                valorLiquido: rendimentoBruto - valorIR
+            };
+        }
+
+        function atualizarInterfaceIR(calculoIR, tipoInvestimento, diasInvestimento) {
+            var irInfoContainer = document.getElementById('irInfoContainer');
+            var irAliquotaBadge = document.getElementById('irAliquotaBadge');
+            var irDescription = document.getElementById('irDescription');
+            
+            if (calculoIR.isento) {
+                irInfoContainer.className = 'ir-info isento';
+                irAliquotaBadge.textContent = 'ISENTO';
+                irAliquotaBadge.className = 'ir-aliquota isento';
+                irDescription.innerHTML = `<strong>${tipoInvestimento.toUpperCase()}</strong> é isento de Imposto de Renda conforme legislação vigente.`;
+            } else {
+                irInfoContainer.className = 'ir-info';
+                irAliquotaBadge.textContent = calculoIR.aliquota + '%';
+                irAliquotaBadge.className = 'ir-aliquota';
+                irDescription.innerHTML = `
+                    <strong>Tabela regressiva do IR:</strong><br>
+                    • Até 180 dias: 22,5%<br>
+                    • 181 a 360 dias: 20%<br>
+                    • 361 a 720 dias: 17,5%<br>
+                    • Acima de 720 dias: 15%<br>
+                    <em>Seu investimento: ${diasInvestimento} dias (${calculoIR.aliquota}%)</em>
+                `;
+            }
+        }
+
+        function criarGraficoComIR(dadosBrutos, dadosLiquidos, isento) {
+            var chartContent = document.getElementById('chartContent');
+            if (!chartContent) return;
+            
+            var html = '';
+            
+            for (var i = 0; i < dadosBrutos.labels.length; i++) {
+                var isLast = i === dadosBrutos.labels.length - 1;
+                var lineClass = isLast ? 'chart-line chart-total' : 'chart-line';
+                
+                html += `
+                    <div class="${lineClass}">
+                        <span class="chart-period">${dadosBrutos.labels[i]}</span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span class="chart-value">${formatarMoeda(dadosBrutos.valores[i])}</span>
+                            ${!isento ? `<span class="chart-value-liquido">${formatarMoeda(dadosLiquidos.valores[i])} líquido</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chartContent.innerHTML = html;
+            
+            var legend = document.createElement('div');
+            legend.style.marginTop = '10px';
+            legend.style.padding = '8px';
+            legend.style.background = '#f7fafc';
+            legend.style.borderRadius = '6px';
+            legend.style.fontSize = '0.7em';
+            legend.style.textAlign = 'center';
+            legend.innerHTML = isento ? '✅ Investimento isento de IR' : '📊 Linha superior: Bruto | Linha inferior: Líquido';
+            
+            chartContent.appendChild(legend);
+        }
+
+        function exportarParaExcel() {
+            var dados = {
+                dataSimulacao: new Date().toLocaleDateString('pt-BR'),
+                horaSimulacao: new Date().toLocaleTimeString('pt-BR'),
+                tipoAplicacao: document.getElementById('resTipoAplicacao').textContent,
+                instituicao: document.getElementById('resInstituicao').textContent,
+                prazo: document.getElementById('resPrazo').textContent,
+                valorAplicado: document.getElementById('resValorAplicado').textContent,
+                valorBruto: document.getElementById('resValorBruto').textContent,
+                rendimento: document.getElementById('resRendimento').textContent,
+                impostoRenda: document.getElementById('resIR').textContent,
+                aliquotaIR: document.getElementById('resAliquotaIR').textContent,
+                valorLiquido: document.getElementById('resValorLiquido').textContent,
+                taxaAnual: document.getElementById('resTaxaUsada').textContent,
+                selicBase: document.getElementById('resSelicBase').textContent,
+                descricaoTaxa: document.getElementById('resDescricaoTaxa').textContent,
+                situacaoIR: document.getElementById('irDescription').textContent.replace(/<br>/g, ' | ')
+            };
+            
+            var csvContent = "SIMULAÇÃO DE INVESTIMENTOS - MARCUS DELEON™\r\n\r\n";
+            csvContent += "RELATÓRIO DE SIMULAÇÃO FINANCEIRA\r\n";
+            csvContent += "Data da Simulação;" + dados.dataSimulacao + "\r\n";
+            csvContent += "Hora da Simulação;" + dados.horaSimulacao + "\r\n";
+            csvContent += "\r\n";
+            csvContent += "CONFIGURAÇÃO DA APLICAÇÃO\r\n";
+            csvContent += "Tipo de Aplicação;" + dados.tipoAplicacao + "\r\n";
+            csvContent += "Instituição Financeira;" + dados.instituicao + "\r\n";
+            csvContent += "Prazo do Investimento;" + dados.prazo + "\r\n";
+            csvContent += "Valor Aplicado;" + dados.valorAplicado + "\r\n";
+            csvContent += "\r\n";
+            csvContent += "RESULTADOS FINANCEIROS\r\n";
+            csvContent += "Valor Bruto Final;" + dados.valorBruto + "\r\n";
+            csvContent += "Rendimento Bruto;" + dados.rendimento + "\r\n";
+            csvContent += "Imposto de Renda;" + dados.impostoRenda + "\r\n";
+            csvContent += "Alíquota IR;" + dados.aliquotaIR + "\r\n";
+            csvContent += "VALOR LÍQUIDO FINAL;" + dados.valorLiquido + "\r\n";
+            csvContent += "\r\n";
+            csvContent += "INFORMAÇÕES TÉCNICAS\r\n";
+            csvContent += "Taxa Anual Utilizada;" + dados.taxaAnual + "\r\n";
+            csvContent += "Base SELIC;" + dados.selicBase + "\r\n";
+            csvContent += "Tipo de Taxa;" + dados.descricaoTaxa + "\r\n";
+            csvContent += "Situação do IR;" + dados.situacaoIR + "\r\n";
+            csvContent += "\r\n";
+            
+            var chartLines = document.querySelectorAll('.chart-line');
+            if (chartLines.length > 0) {
+                csvContent += "EVOLUÇÃO DO INVESTIMENTO\r\n";
+                csvContent += "Período;Valor Bruto;Valor Líquido\r\n";
+                
+                chartLines.forEach(function(line) {
+                    var periodo = line.querySelector('.chart-period').textContent;
+                    var valores = line.querySelectorAll('.chart-value, .chart-value-liquido');
+                    var valorBruto = valores[0].textContent;
+                    var valorLiquido = valores[1] ? valores[1].textContent.replace(' líquido', '') : valorBruto;
+                    
+                    csvContent += periodo + ";" + valorBruto + ";" + valorLiquido + "\r\n";
+                });
+                csvContent += "\r\n";
+            }
+            
+            csvContent += "INFORMAÇÕES ADICIONAIS\r\n";
+            csvContent += "Plataforma;MARCUS DELEON™ - Tecnologia Financeira Premium\r\n";
+            csvContent += "Observação;\"Este relatório foi gerado automaticamente pelo Simulador de Investimentos Marcus DeLeon™. Os valores são estimativas e podem sofrer variações.\"\r\n";
+            
+            var blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement("a");
+            var url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", "simulacao_investimentos_" + new Date().toISOString().slice(0, 10) + ".csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('📊 Planilha Excel gerada com sucesso!\n\nO arquivo foi salvo como "simulacao_investimentos.csv"');
+        }
+
+        function GerenciadorSELIC() {
+            this.selicAtual = 13.75;
+            this.selicHistorico = [];
+            this.variacao = 0;
+            this.tendencia = 'stable';
+        }
+
+        GerenciadorSELIC.prototype.atualizarSELIC = function() {
+            var selicAnterior = this.selicAtual;
+            var variacao = (Math.random() - 0.5) * 0.5;
+            this.selicAtual += variacao;
+            this.selicAtual = Math.max(2, Math.min(20, this.selicAtual));
+            this.variacao = ((this.selicAtual - selicAnterior) / selicAnterior) * 100;
+            
+            if (this.variacao > 0.05) {
+                this.tendencia = 'up';
+            } else if (this.variacao < -0.05) {
+                this.tendencia = 'down';
+            } else {
+                this.tendencia = 'stable';
+            }
+
+            this.selicHistorico.unshift({
+                valor: this.selicAtual,
+                data: new Date(),
+                variacao: this.variacao
+            });
+            
+            if (this.selicHistorico.length > 10) {
+                this.selicHistorico.pop();
+            }
+
+            this.atualizarUI();
+        };
+
+        GerenciadorSELIC.prototype.atualizarUI = function() {
+            var selicValue = document.getElementById('selicValue');
+            var selicStatus = document.getElementById('selicStatus');
+            var selicHistory = document.getElementById('selicHistory');
+
+            selicValue.textContent = 'SELIC: ' + this.selicAtual.toFixed(2) + '% a.a.';
+            
+            var statusText = 'Fonte: Banco Central - Meta SELIC | ';
+            var statusClass = 'selic-stable';
+            
+            if (this.tendencia === 'up') {
+                statusText += '▲ ' + Math.abs(this.variacao).toFixed(2) + '%';
+                statusClass = 'selic-up';
+            } else if (this.tendencia === 'down') {
+                statusText += '▼ ' + Math.abs(this.variacao).toFixed(2) + '%';
+                statusClass = 'selic-down';
+            } else {
+                statusText += '► Estável';
+            }
+
+            selicStatus.textContent = statusText;
+            selicStatus.className = 'selic-status ' + statusClass;
+
+            if (this.selicHistorico.length > 1) {
+                var ultimaVariacao = this.selicHistorico[0].variacao;
+                var textoVariacao = ultimaVariacao > 0 ? 'subindo' : ultimaVariacao < 0 ? 'caindo' : 'estável';
+                selicHistory.textContent = 'Última hora: ' + textoVariacao;
+            }
+        };
+
+        GerenciadorSELIC.prototype.getSELIC = function() {
+            return this.selicAtual;
+        };
+
+        GerenciadorSELIC.prototype.iniciarAtualizacaoAutomatica = function() {
+            var self = this;
+            setInterval(function() {
+                self.atualizarSELIC();
+            }, 30000);
+            this.atualizarSELIC();
+        };
+
+        function GerenciadorBancos() {
+            this.bancos = [
+                { nome: "Banco do Brasil", tipo: "Banco Múltiplo", codigo: "001" },
+                { nome: "Banco Central do Brasil", tipo: "Banco Central", codigo: "000" },
+                { nome: "Caixa Econômica Federal", tipo: "Caixa Econômica", codigo: "104" },
+                { nome: "Banco Bradesco", tipo: "Banco Múltiplo", codigo: "237" },
+                { nome: "Itaú Unibanco", tipo: "Banco Múltiplo", codigo: "341" },
+                { nome: "Banco Santander", tipo: "Banco Múltiplo", codigo: "033" },
+                { nome: "Banco Safra", tipo: "Banco Múltiplo", codigo: "422" },
+                { nome: "Banco do Nordeste", tipo: "Banco de Desenvolvimento", codigo: "004" },
+                { nome: "Banco da Amazônia", tipo: "Banco de Desenvolvimento", codigo: "003" },
+                { nome: "Banco Votorantim", tipo: "Banco Múltiplo", codigo: "655" },
+                { nome: "BTG Pactual", tipo: "Banco de Investimento", codigo: "208" },
+                { nome: "Banco Inter", tipo: "Banco Digital", codigo: "077" },
+                { nome: "Nubank", tipo: "Banco Digital", codigo: "260" },
+                { nome: "C6 Bank", tipo: "Banco Digital", codigo: "336" },
+                { nome: "Banco Original", tipo: "Banco Digital", codigo: "212" },
+                { nome: "Banco Neon", tipo: "Banco Digital", codigo: "735" },
+                { nome: "Banco Pan", tipo: "Banco Múltiplo", codigo: "623" },
+                { nome: "Banco Modal", tipo: "Banco de Investimento", codigo: "746" },
+                { nome: "Banco Pine", tipo: "Banco de Investimento", codigo: "643" },
+                { nome: "Banco Daycoval", tipo: "Banco Múltiplo", codigo: "707" },
+                { nome: "Banco Rendimento", tipo: "Banco Comercial", codigo: "633" },
+                { nome: "Banco Citibank", tipo: "Banco Múltiplo", codigo: "745" },
+                { nome: "Banco ABC Brasil", tipo: "Banco Múltiplo", codigo: "246" },
+                { nome: "Banco Ribeirão Preto", tipo: "Banco Múltiplo", codigo: "741" },
+                { nome: "Banco Semear", tipo: "Banco Múltiplo", codigo: "743" },
+                { nome: "Banco Sofisa", tipo: "Banco Múltiplo", codigo: "637" },
+                { nome: "Banco Topázio", tipo: "Banco Múltiplo", codigo: "082" },
+                { nome: "Banco Tricury", tipo: "Banco Múltiplo", codigo: "634" },
+                { nome: "Banco Volkswagen", tipo: "Banco Múltiplo", codigo: "393" }
+            ];
+            
+            this.bancoSelecionado = null;
+            this.searchTimeout = null;
+        }
+
+        GerenciadorBancos.prototype.buscarBancos = function(termo) {
+            var self = this;
+            var spinner = document.getElementById('searchSpinner');
+            var banksList = document.getElementById('banksList');
+            
+            spinner.classList.add('active');
+            
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(function() {
+                var resultados = self.bancos.filter(function(banco) {
+                    return banco.nome.toLowerCase().includes(termo.toLowerCase()) ||
+                           banco.tipo.toLowerCase().includes(termo.toLowerCase()) ||
+                           banco.codigo.includes(termo);
+                });
+                
+                self.exibirResultados(resultados);
+                spinner.classList.remove('active');
+            }, 800);
+        };
+
+        GerenciadorBancos.prototype.exibirResultados = function(bancos) {
+            var banksList = document.getElementById('banksList');
+            var searchInput = document.getElementById('instituicaoBancaria');
+            
+            if (bancos.length === 0) {
+                banksList.innerHTML = '<div class="bank-item">Nenhum banco encontrado</div>';
+            } else {
+                banksList.innerHTML = '';
+                var self = this;
+                bancos.forEach(function(banco) {
+                    var bankItem = document.createElement('div');
+                    bankItem.className = 'bank-item';
+                    if (self.bancoSelecionado && self.bancoSelecionado.codigo === banco.codigo) {
+                        bankItem.classList.add('selected');
+                    }
+                    
+                    bankItem.innerHTML = `
+                        <div class="bank-logo">${banco.nome.substring(0, 2)}</div>
+                        <div class="bank-info">
+                            <div class="bank-name">${banco.nome}</div>
+                            <div class="bank-type">${banco.tipo} • Código: ${banco.codigo}</div>
+                        </div>
+                    `;
+                    
+                    bankItem.addEventListener('click', function() {
+                        self.selecionarBanco(banco);
+                    });
+                    
+                    banksList.appendChild(bankItem);
+                });
+            }
+            
+            banksList.classList.remove('hidden');
+        };
+
+        GerenciadorBancos.prototype.selecionarBanco = function(banco) {
+            this.bancoSelecionado = banco;
+            document.getElementById('instituicaoBancaria').value = banco.nome;
+            document.getElementById('banksList').classList.add('hidden');
+            
+            var bankItems = document.querySelectorAll('.bank-item');
+            bankItems.forEach(function(item) {
+                item.classList.remove('selected');
+                if (item.querySelector('.bank-name').textContent === banco.nome) {
+                    item.classList.add('selected');
+                }
+            });
+        };
+
+        GerenciadorBancos.prototype.inicializar = function() {
+            var self = this;
+            var searchInput = document.getElementById('instituicaoBancaria');
+            var banksList = document.getElementById('banksList');
+            
+            searchInput.addEventListener('input', function(e) {
+                var termo = e.target.value.trim();
+                
+                if (termo === '') {
+                    banksList.classList.add('hidden');
+                    self.bancoSelecionado = null;
+                    return;
+                }
+                
+                self.buscarBancos(termo);
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !banksList.contains(e.target)) {
+                    banksList.classList.add('hidden');
+                }
+            });
+            
+            banksList.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        };
+
+        var gerenciadorSELIC = new GerenciadorSELIC();
+        var gerenciadorBancos = new GerenciadorBancos();
+
+        function formatarMoeda(valor) {
+            if (typeof Intl === 'undefined' || typeof Intl.NumberFormat === 'undefined') {
+                var valorFormatado = 'R$ ' + valor.toFixed(2).replace('.', ',');
+                return valorFormatado.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+            
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        }
+
+        document.getElementById('valorAplicacao').addEventListener('input', function(e) {
+            var value = e.target.value.replace(/\D/g, '');
+            
+            if (value === '') {
+                e.target.value = '';
+                return;
+            }
+            
+            var numericValue = parseInt(value) / 100;
+            e.target.value = formatarMoeda(numericValue);
+        });
+
+        document.getElementById('valorAplicacao').addEventListener('focus', function(e) {
+            if (e.target.value === '') {
+                e.target.value = 'R$ 0,00';
+            }
+        });
+
+        function atualizarDataHora() {
+            var agora = new Date();
+            var data = agora.toLocaleDateString('pt-BR');
+            var hora = agora.toLocaleTimeString('pt-BR');
+            document.getElementById('currentTime').textContent = hora;
+            document.getElementById('currentDate').textContent = data;
+        }
+
+        function verificarSuporteDateInput() {
+            var input = document.createElement('input');
+            input.setAttribute('type', 'date');
+            var notSupported = input.type === 'text';
+            
+            if (notSupported) {
+                document.getElementById('dataAplicacao').type = 'text';
+                document.getElementById('dataAplicacao').placeholder = 'DD/MM/AAAA';
+            } else {
+                document.getElementById('dataAplicacao').valueAsDate = new Date();
+            }
+        }
+
+        function ajustarTamanhoFonteValores() {
+            var valores = document.querySelectorAll('.resultado-item .value');
+            for (var i = 0; i < valores.length; i++) {
+                var texto = valores[i].textContent;
+                if (texto.length > 12) {
+                    valores[i].parentElement.classList.add('large-value');
+                } else {
+                    valores[i].parentElement.classList.remove('large-value');
+                }
+            }
+        }
+
+        document.getElementById('simuladorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var btnCalcular = document.getElementById('btnCalcular');
+            btnCalcular.classList.add('loading');
+            
+            setTimeout(function() {
+                var tipo = document.getElementById('tipoAplicacao').value;
+                var prazo = parseInt(document.getElementById('prazoMeses').value);
+                var valorInput = document.getElementById('valorAplicacao').value;
+                var instituicao = gerenciadorBancos.bancoSelecionado ? 
+                    gerenciadorBancos.bancoSelecionado.nome : 'Não selecionada';
+                
+                var valor = parseFloat(valorInput.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+
+                if (!tipo || !prazo || !valor || valor < 100) {
+                    alert('Preencha todos os campos corretamente!\nValor mínimo: R$ 100,00');
+                    btnCalcular.classList.remove('loading');
+                    return;
+                }
+
+                var selicAtual = gerenciadorSELIC.getSELIC();
+                var taxaAnual, taxaMensal, valorFinal, descricaoTaxa;
+
+                switch(tipo) {
+                    case 'poupanca':
+                        taxaMensal = selicAtual > 8.5 ? 0.005 : (selicAtual / 100 / 12);
+                        taxaAnual = ((Math.pow(1 + taxaMensal, 12) - 1) * 100);
+                        descricaoTaxa = "Poupança: " + (selicAtual > 8.5 ? "0,5% ao mês + TR" : "70% da SELIC + TR");
+                        break;
+                    case 'cdb':
+                        taxaMensal = (selicAtual / 100 / 12) * 1.0;
+                        taxaAnual = selicAtual * 1.0;
+                        descricaoTaxa = "CDB: 100% do CDI";
+                        break;
+                    case 'lci':
+                    case 'lca':
+                        taxaMensal = (selicAtual / 100 / 12) * 0.9;
+                        taxaAnual = selicAtual * 0.9;
+                        descricaoTaxa = tipo.toUpperCase() + ": 90% do CDI (Isento de IR)";
+                        break;
+                    case 'tesouro':
+                        taxaMensal = ((selicAtual + 0.1) / 100 / 12);
+                        taxaAnual = selicAtual + 0.1;
+                        descricaoTaxa = "Tesouro SELIC: SELIC + 0,10% a.a.";
+                        break;
+                    case 'overnight':
+                        taxaMensal = (selicAtual / 100 / 12) * 0.98;
+                        taxaAnual = selicAtual * 0.98;
+                        descricaoTaxa = "Overnight: 98% do CDI";
+                        break;
+                    case 'prefixado':
+                        taxaAnual = selicAtual + 1.5;
+                        taxaMensal = taxaAnual / 100 / 12;
+                        descricaoTaxa = "Pré-fixado: Taxa fixa " + taxaAnual.toFixed(2) + "% a.a.";
+                        break;
+                    case 'posfixado':
+                        taxaAnual = selicAtual + 0.3;
+                        taxaMensal = taxaAnual / 100 / 12;
+                        descricaoTaxa = "Pós-fixado: CDI + 0,30% a.a.";
+                        break;
+                    case 'prazo-fixo':
+                        taxaMensal = (selicAtual / 100 / 12) * 1.05;
+                        taxaAnual = selicAtual * 1.05;
+                        descricaoTaxa = "Prazo Fixo: 105% do CDI";
+                        break;
+                    case 'rdb':
+                        taxaMensal = (selicAtual / 100 / 12) * 0.95;
+                        taxaAnual = selicAtual * 0.95;
+                        descricaoTaxa = "RDB: 95% do CDI";
+                        break;
+                    default:
+                        taxaMensal = (selicAtual / 100 / 12) * 0.8;
+                        taxaAnual = selicAtual * 0.8;
+                        descricaoTaxa = "Renda Fixa: 80% do CDI";
+                }
+
+                valorFinal = valor * Math.pow(1 + taxaMensal, prazo);
+                var rendimento = valorFinal - valor;
+
+                var dataAplicacao = new Date(document.getElementById('dataAplicacao').value);
+                var dataFinal = new Date(dataAplicacao);
+                dataFinal.setMonth(dataFinal.getMonth() + prazo);
+                var diasInvestimento = Math.floor((dataFinal - dataAplicacao) / (1000 * 60 * 60 * 24));
+
+                var calculoIR = calcularIR(tipo, diasInvestimento, rendimento);
+                var valorLiquido = valorFinal - calculoIR.valorIR;
+
+                document.getElementById('resValorAplicado').textContent = formatarMoeda(valor);
+                document.getElementById('resValorBruto').textContent = formatarMoeda(valorFinal);
+                document.getElementById('resRendimento').textContent = formatarMoeda(rendimento);
+                document.getElementById('resPrazo').textContent = prazo + ' meses';
+                document.getElementById('resTaxaUsada').textContent = taxaAnual.toFixed(2) + '% a.a.';
+                document.getElementById('resTipoAplicacao').textContent = 
+                    document.getElementById('tipoAplicacao').options[document.getElementById('tipoAplicacao').selectedIndex].text;
+                document.getElementById('resInstituicao').textContent = instituicao;
+
+                document.getElementById('resIR').textContent = formatarMoeda(calculoIR.valorIR);
+                document.getElementById('resAliquotaIR').textContent = calculoIR.aliquota + '%';
+                document.getElementById('resValorLiquido').textContent = 
+                    formatarMoeda(calculoIR.isento ? valorFinal : valorLiquido);
+
+                document.getElementById('resSelicBase').textContent = 
+                    'SELIC atual: ' + selicAtual.toFixed(2) + '% a.a.';
+                document.getElementById('resDescricaoTaxa').textContent = descricaoTaxa;
+
+                var dadosGrafico = {
+                    labels: [],
+                    valores: []
+                };
+                
+                var dadosGraficoIR = {
+                    labels: [],
+                    valores: []
+                };
+                
+                for (var i = 0; i <= prazo; i += Math.max(1, Math.floor(prazo / 6))) {
+                    if (i > prazo) break;
+                    dadosGrafico.labels.push(i === 0 ? "Início" : i + "m");
+                    var valorParcial = valor * Math.pow(1 + taxaMensal, i);
+                    dadosGrafico.valores.push(valorParcial);
+                    
+                    var rendimentoParcial = valorParcial - valor;
+                    var irParcial = calcularIR(tipo, diasInvestimento * (i / prazo), rendimentoParcial);
+                    dadosGraficoIR.valores.push(valorParcial - irParcial.valorIR);
+                }
+                
+                if (dadosGrafico.labels[dadosGrafico.labels.length - 1] !== prazo + "m") {
+                    dadosGrafico.labels.push(prazo + "m");
+                    dadosGrafico.valores.push(valorFinal);
+                    dadosGraficoIR.valores.push(calculoIR.isento ? valorFinal : valorLiquido);
+                }
+
+                ajustarTamanhoFonteValores();
+                
+                atualizarInterfaceIR(calculoIR, tipo, diasInvestimento);
+                
+                criarGraficoComIR(dadosGrafico, dadosGraficoIR, calculoIR.isento);
+
+                document.getElementById('resultadoVazio').classList.add('hidden');
+                document.getElementById('resultadoDetalhado').classList.remove('hidden');
+                
+                btnCalcular.classList.remove('loading');
+            }, 500);
+        });
+
+        document.getElementById('btnLimpar').addEventListener('click', function() {
+            document.getElementById('simuladorForm').reset();
+            document.getElementById('dataAplicacao').valueAsDate = new Date();
+            document.getElementById('valorAplicacao').value = '';
+            document.getElementById('instituicaoBancaria').value = '';
+            document.getElementById('banksList').classList.add('hidden');
+            gerenciadorBancos.bancoSelecionado = null;
+            document.getElementById('resultadoDetalhado').classList.add('hidden');
+            document.getElementById('resultadoVazio').classList.remove('hidden');
+        });
+
+        document.getElementById('btnExportPDF').addEventListener('click', function() {
+            var tipo = document.getElementById('tipoAplicacao').value;
+            var instituicao = gerenciadorBancos.bancoSelecionado ? 
+                gerenciadorBancos.bancoSelecionado.nome : 'Não selecionada';
+            
+            var conteudoPDF = `
+SIMULAÇÃO DE INVESTIMENTOS - MARCUS DELEON™
+
+Data: ${new Date().toLocaleDateString('pt-BR')}
+Hora: ${new Date().toLocaleTimeString('pt-BR')}
+
+CONFIGURAÇÃO:
+• Tipo: ${document.getElementById('resTipoAplicacao').textContent}
+• Instituição: ${instituicao}
+• Prazo: ${document.getElementById('resPrazo').textContent}
+• Valor Aplicado: ${document.getElementById('resValorAplicado').textContent}
+
+RESULTADOS:
+• Valor Bruto Final: ${document.getElementById('resValorBruto').textContent}
+• Rendimento Bruto: ${document.getElementById('resRendimento').textContent}
+• Imposto de Renda: ${document.getElementById('resIR').textContent}
+• Alíquota IR: ${document.getElementById('resAliquotaIR').textContent}
+• VALOR LÍQUIDO: ${document.getElementById('resValorLiquido').textContent}
+
+INFORMAÇÕES TÉCNICAS:
+• Taxa Anual: ${document.getElementById('resTaxaUsada').textContent}
+• Base SELIC: ${document.getElementById('resSelicBase').textContent}
+• ${document.getElementById('irDescription').textContent.replace(/<br>/g, '\n• ')}
+
+---
+MARCUS DELEON™ - Tecnologia Financeira Premium
+www.marcusdeleon.com.br
+    `;
+    
+            alert('📄 CONTEÚDO PARA PDF PRONTO!\n\nCopie este texto e salve em seu dispositivo:\n\n' + conteudoPDF);
+        });
+
+        document.getElementById('btnExportExcel').addEventListener('click', function() {
+            exportarParaExcel();
+        });
+
+        document.getElementById('btnExportImage').addEventListener('click', function() {
+            alert('📸 Para salvar como imagem no iPhone:\n\n1. Faça um print da tela (Botão Home + Power)\n2. Toque na miniatura\n3. Toque em Compartilhar\n4. Salve na Galeria');
+        });
+
+        verificarSuporteDateInput();
+        gerenciadorSELIC.iniciarAtualizacaoAutomatica();
+        gerenciadorBancos.inicializar();
+        setInterval(atualizarDataHora, 1000);
+        atualizarDataHora();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.btn');
+            
+            buttons.forEach(button => {
+                button.addEventListener('mousedown', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                button.addEventListener('mouseup', function() {
+                    this.style.transform = 'scale(1)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+                
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                button.addEventListener('touchend', function() {
+                    this.style.transform = 'scale(1)';
+                });
+                
+                button.addEventListener('touchcancel', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
